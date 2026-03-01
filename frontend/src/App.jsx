@@ -42,7 +42,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>To-Do List (CI/CD Practice)</h1>
+        <h1>To-Do List (Production CI/CD Cycle v1.1)</h1>
 
         <form onSubmit={addTodo}>
           <input
