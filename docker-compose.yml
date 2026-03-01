@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  nginx-proxy:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+
+  frontend:
+    build: ./frontend
+    expose:
+      - "80"
+
+  backend:
+    build: ./backend
+    expose:
+      - "5000"
+    environment:
+      - PORT=5000
