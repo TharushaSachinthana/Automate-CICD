@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import { lastUpdate } from './heartbeat'
 
 function App() {
   const [todos, setTodos] = useState([])
@@ -42,7 +43,8 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>To-Do List (Production CI/CD Cycle v1.1)</h1>
+        <h1>To-Do List (Industry-Standard CI/CD)</h1>
+        <p style={{ color: '#888', fontStyle: 'italic', fontSize: '0.8rem' }}>Last Daily Heartbeat: {lastUpdate}</p>
 
         <form onSubmit={addTodo}>
           <input
