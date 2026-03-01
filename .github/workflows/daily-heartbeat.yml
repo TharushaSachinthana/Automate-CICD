@@ -25,9 +25,8 @@ jobs:
 
       - name: Commit and Push
         run: |
-          # CHANGE THESE TO YOUR GITHUB NAME AND EMAIL TO GET GREEN SQUARES
           git config --global user.name "Tharusha Sachinthana"
-          git config --global user.email "your-github-email@example.com"
+          git config --global user.email "2020e159@eng.jfn.ac.lk"
           git add .
           git commit -m "chore: daily heartbeat $(date +'%Y-%m-%d') [streak-builder]" || echo "No changes to commit"
           git push origin test
