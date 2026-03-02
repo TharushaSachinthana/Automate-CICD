@@ -47,7 +47,11 @@ jobs:
 
       - name: Set Image Tag
         id: vars
-        run: echo "tag=${{ env.APP_VERSION }}.${{ github.run_number }}" >> $GITHUB_OUTPUT
+        run: |
+          # Sanitize namespace (remove potential whitespace/newlines)
+          NAMESPACE=$(echo "${{ secrets.DOCKERHUB_USERNAME }}" | xargs)
+          echo "DOCKER_NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
+          echo "tag=${{ env.APP_VERSION }}.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       # Frontend Build & Push
       - name: Build & Push Frontend
@@ -56,8 +60,8 @@ jobs:
           context: ./frontend
           push: true
           tags: |
-            ${{ env.DOCKER_IMAGE_NAMESPACE }}/todo-frontend:${{ steps.vars.outputs.tag }}
-            ${{ env.DOCKER_IMAGE_NAMESPACE }}/todo-frontend:latest
+            ${{ env.DOCKER_NAMESPACE }}/todo-frontend:${{ steps.vars.outputs.tag }}
+            ${{ env.DOCKER_NAMESPACE }}/todo-frontend:latest
 
       # Backend Build & Push
       - name: Build & Push Backend
@@ -66,8 +70,8 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ${{ env.DOCKER_IMAGE_NAMESPACE }}/todo-backend:${{ steps.vars.outputs.tag }}
-            ${{ env.DOCKER_IMAGE_NAMESPACE }}/todo-backend:latest
+            ${{ env.DOCKER_NAMESPACE }}/todo-backend:${{ steps.vars.outputs.tag }}
+            ${{ env.DOCKER_NAMESPACE }}/todo-backend:latest
 
       # Nginx Build & Push
       - name: Build & Push Nginx
@@ -76,5 +80,5 @@ jobs:
           context: ./nginx
           push: true
           tags: |
-            ${{ env.DOCKER_IMAGE_NAMESPACE }}/todo-nginx:${{ steps.vars.outputs.tag }}
-            ${{ env.DOCKER_IMAGE_NAMESPACE }}/todo-nginx:latest
+            ${{ env.DOCKER_NAMESPACE }}/todo-nginx:${{ steps.vars.outputs.tag }}
+            ${{ env.DOCKER_NAMESPACE }}/todo-nginx:latest
