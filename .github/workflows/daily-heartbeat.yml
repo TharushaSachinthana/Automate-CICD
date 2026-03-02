@@ -34,12 +34,16 @@ jobs:
           git push origin test
 
       - name: Create Pull Request (test to develop)
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: test-auto-pr-heartbeat # Temporary branch for the PR
-          base: develop # Target branch
-          title: "Daily Heartbeat Check - $(date +'%Y-%m-%d')"
-          body: "Automated daily heartbeat to verify the CI/CD pipeline."
-          commit-message: "chore: daily heartbeat $(date +'%Y-%m-%d')"
-          branch-suffix: timestamp
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create the PR from 'test' to 'develop'
+          # If a PR already exists, this command will fail gracefully
+          gh pr create \
+            --base develop \
+            --head test \
+            --title "Daily Heartbeat Check - $(date +'%Y-%m-%d')" \
+            --body "Automated daily heartbeat to verify the CI/CD pipeline." || \
+          gh pr edit --title "Daily Heartbeat Check - $(date +'%Y-%m-%d')" --body "Updated automated daily heartbeat." || \
+          echo "PR creation/update skipped (possibly no changes or already exists)"
+
