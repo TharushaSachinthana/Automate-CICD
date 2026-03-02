@@ -8,28 +8,35 @@ An industry-standard, multi-service CI/CD pipeline implementation using **GitHub
 - **Reverse Proxy**: Nginx - Routes traffic between frontend and backend services.
 - **Continuous Registry**: Docker Hub (Public/Private repositories).
 
-## 🔄 CI/CD Pipeline Flow
+## 🔄 CI/CD Pipeline Flow (The Big Picture)
 The workflow follows a **GitFlow-Lite** strategy to ensure code quality and seamless deployments:
 
-1. **Development (`test` branch)**: Daily work and experimentation.
-2. **Pull Request (`test` → `develop`)**: 
-   - Triggers **Linting** & **Unit Tests**.
-   - Executes **Security Scans** (`npm audit`).
-3. **Merge to `develop`**:
-   - Automatically builds 3 Docker images (Frontend, Backend, Nginx).
-   - Tags images with **Semantic Versioning** (`MAJOR.MINOR.RUN_NUMBER`) and `latest`.
-   - Pushes images to **Docker Hub**.
-4. **Auto-Deployment**:
-   - **Watchtower** (running locally or on server) detects the new `latest` tag.
-   - Automatically pulls the updated images and restarts containers with zero manual effort.
+1.  **Development (`test` branch)**: Daily work and experimentation. Every push triggers a high-quality audit.
+2.  **Pull Request (`test` → `develop`)**: 
+    - **QA Gate**: Triggers **Strict 90% Code Coverage** enforcement.
+    - **Security Scans**: Executes `npm audit` for critical vulnerabilities.
+    - **Linting**: Ensures code consistency before merging.
+3.  **Merge to `develop`**:
+    - Automatically builds 3 Docker images (Frontend, Backend, Nginx).
+    - Tags images with **Semantic Versioning** (`MAJOR.MINOR.RUN_NUMBER`) and `latest`.
+    - Pushes images to **Docker Hub**.
+4.  **Auto-Deployment**:
+    - **Watchtower** (running locally or on server) detects the new `latest` tag on Docker Hub.
+    - Automatically pulls updated images and restarts containers with **zero manual effort**.
+
+## 🛡️ QA & Reliability (90% Guardrail)
+This project implements professional-grade Quality Assurance:
+- **Strict Coverage Thresholds**: Every PR must achieve >90% coverage in **Branches, Functions, Lines, and Statements**.
+- **Refactored for Testability**: The Express app is modularly exported to allow in-memory testing with `supertest`.
+- **Istanbul Integration**: Key infrastructure blocks are identified for exclusion, ensuring we only measure meaningful business logic.
+- **Artifact Auditing**: Full HTML coverage reports are saved as workflow artifacts on every build.
 
 ## 🤖 Daily Heartbeat Automation
 To ensure the pipeline is always functional, a "Heartbeat" workflow runs daily at 09:00 UTC (configured on the `main` branch):
-- Makes a chore commit to the `test` branch to maintain consistency.
-- Automatically opens a Pull Request from `test` to `develop`.
-- Uses the **GitHub CLI (`gh`)** for robust PR management and updates.
-- Provides a "Merge" opportunity to verify the entire build/push/pull cycle.
-
+- Makes a chore commit to the `test` branch to maintain consistency and keep the GitHub streak alive.
+- Automatically opens (and updates) a Pull Request from `test` to `develop`.
+- Uses the **GitHub CLI (`gh`)** for robust automated PR management.
+- Provides a "Merge" opportunity to verify the entire build/push/pull cycle systematically.
 
 ## 🛠️ Local Setup
 
@@ -60,10 +67,12 @@ To ensure the pipeline is always functional, a "Heartbeat" workflow runs daily a
    docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 30
    ```
 
-## 🔒 Security & Best Practices
-- **Multi-stage Builds**: Minimizes Docker image size and exposure.
-- **Non-root privilege**: Backend runs under specialized Node user (Production prep).
-- **Secrets Management**: Sensitive keys (Docker Tokens) are stored exclusively in GitHub Secrets.
+## 🚀 Future Direction
+Leveling up the ecosystem with these upcoming features:
+- **GitOps with ArgoCD**: Moving towards declarative state management in Kubernetes.
+- **End-to-End (E2E) Testing**: Implementing Playwright/Cypress for full user-journey verification.
+- **Monitoring & Alerts**: Integrating Prometheus/Grafana and Slack notifications for deployment status.
+- **Infrastructure as Code (IaC)**: Using Terraform to manage cloud resources.
 
 ---
-*Maintained for practicing high-frequency, reliable automation.*
+*Maintained for practicing high-frequency, reliable automation and engineering excellence.*
