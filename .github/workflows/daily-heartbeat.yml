@@ -1,0 +1,45 @@
+name: Daily Heartbeat Commit
+
+# CRITICAL: This file MUST exist on the default branch (main) for the schedule to trigger.
+on:
+  schedule:
+    - cron: '0 9 * * *' # Runs everyday at 09:00 UTC
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: test # We work on the test branch
+          fetch-depth: 0
+
+      - name: Add Daily Task
+        run: |
+          DATE=$(date +'%Y-%m-%d')
+          echo "Daily Heartbeat: Workflow check for $DATE" >> daily_log.txt
+          echo "export const lastUpdate = '$DATE';" > frontend/src/heartbeat.js
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "Tharusha Sachinthana"
+          git config --global user.email "2020e159@eng.jfn.ac.lk"
+          git add .
+          git commit -m "chore: daily heartbeat $(date +'%Y-%m-%d') [streak-builder]" || echo "No changes to commit"
+          git push origin test
+
+      - name: Create Pull Request (test to develop)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: test-auto-pr-heartbeat # Temporary branch for the PR
+          base: develop # Target branch
+          title: "Daily Heartbeat Check - $(date +'%Y-%m-%d')"
+          body: "Automated daily heartbeat to verify the CI/CD pipeline."
+          commit-message: "chore: daily heartbeat $(date +'%Y-%m-%d')"
+          branch-suffix: timestamp
