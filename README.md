@@ -23,6 +23,12 @@ The workflow follows a **GitFlow-Lite** strategy to ensure code quality and seam
    - **Watchtower** (running locally or on server) detects the new `latest` tag.
    - Automatically pulls the updated images and restarts containers with zero manual effort.
 
+## 🛡️ QA & Reliability (90% Guardrail)
+The pipeline includes a professional-grade Quality Assurance layer:
+- **Sticking to 90%+ Coverage**: Every PR must meet a global coverage threshold of 90% (Branches, Functions, Lines).
+- **Refactor-Safe Code**: The Express app is refactored for proper unit testing using `supertest`.
+- **Artifact Reporting**: Coverage reports are automatically uploaded as GitHub workflow artifacts for visual review.
+
 ## 🤖 Daily Heartbeat Automation
 To ensure the pipeline is always functional, a "Heartbeat" workflow runs daily at 09:00 UTC:
 - Makes a chore commit to the `test` branch.

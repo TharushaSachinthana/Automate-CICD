@@ -25,8 +25,16 @@ jobs:
       - name: Install Backend Deps
         run: cd backend && npm install
 
-      - name: Run Backend Tests
-        run: cd backend && npm test
+      - name: Run Backend Tests (with Coverage)
+        run: cd backend && npm run test:coverage
+
+      - name: Upload Coverage Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: backend/coverage/
+
 
       - name: Security Scan (npm audit)
         run: cd backend && npm audit --audit-level=high
