@@ -1,1 +1,1 @@
-export const lastUpdate = '2026-06-01';
+export const lastUpdate = '2026-06-02';
