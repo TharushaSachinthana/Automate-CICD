@@ -1,78 +1,121 @@
 # Automate-CICD 🚀
 
-An industry-standard, multi-service CI/CD pipeline implementation using **GitHub Actions**, **Docker Hub**, and **Watchtower**. This project serves as a production-grade template for automating the development lifecycle of a React/Node.js stack.
-
-## 🏗️ Architecture
-- **Frontend**: React (Vite) - Served via Nginx in a multi-stage Docker build.
-- **Backend**: Node.js (Express) - REST API with Jest/Supertest suite.
-- **Reverse Proxy**: Nginx - Routes traffic between frontend and backend services.
-- **Continuous Registry**: Docker Hub (Public/Private repositories).
-
-## 🔄 CI/CD Pipeline Flow (The Big Picture)
-The workflow follows a **GitFlow-Lite** strategy to ensure code quality and seamless deployments:
-
-1.  **Development (`test` branch)**: Daily work and experimentation. Every push triggers a high-quality audit.
-2.  **Pull Request (`test` → `develop`)**: 
-    - **QA Gate**: Triggers **Strict 90% Code Coverage** enforcement.
-    - **Security Scans**: Executes `npm audit` for critical vulnerabilities.
-    - **Linting**: Ensures code consistency before merging.
-3.  **Merge to `develop`**:
-    - Automatically builds 3 Docker images (Frontend, Backend, Nginx).
-    - Tags images with **Semantic Versioning** (`MAJOR.MINOR.RUN_NUMBER`) and `latest`.
-    - Pushes images to **Docker Hub**.
-4.  **Auto-Deployment**:
-    - **Watchtower** (running locally or on server) detects the new `latest` tag on Docker Hub.
-    - Automatically pulls updated images and restarts containers with **zero manual effort**.
-
-## 🛡️ QA & Reliability (90% Guardrail)
-This project implements professional-grade Quality Assurance:
-- **Strict Coverage Thresholds**: Every PR must achieve >90% coverage in **Branches, Functions, Lines, and Statements**.
-- **Refactored for Testability**: The Express app is modularly exported to allow in-memory testing with `supertest`.
-- **Istanbul Integration**: Key infrastructure blocks are identified for exclusion, ensuring we only measure meaningful business logic.
-- **Artifact Auditing**: Full HTML coverage reports are saved as workflow artifacts on every build.
-
-## 🤖 Daily Heartbeat Automation
-To ensure the pipeline is always functional, a "Heartbeat" workflow runs daily at 09:00 UTC (configured on the `main` branch):
-- Makes a chore commit to the `test` branch to maintain consistency and keep the GitHub streak alive.
-- Automatically opens (and updates) a Pull Request from `test` to `develop`.
-- Uses the **GitHub CLI (`gh`)** for robust automated PR management.
-- Provides a "Merge" opportunity to verify the entire build/push/pull cycle systematically.
-
-## 🛠️ Local Setup
-
-### Prerequisites
-- Docker Desktop
-- Node.js (v18+)
-
-### Installation
-1. **Clone the repo**:
-   ```bash
-   git clone https://github.com/TharushaSachinthana/Automate-CICD.git
-   cd Automate-CICD
-   ```
-
-2. **Configure Environment**:
-   Create a `.env` file in the root:
-   ```env
-   DOCKERHUB_USERNAME=your_dockerhub_username
-   ```
-
-3. **Run Production Stack**:
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
-
-4. **Enable Auto-Updates**:
-   ```bash
-   docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 30
-   ```
-
-## 🚀 Future Direction
-Leveling up the ecosystem with these upcoming features:
-- **GitOps with ArgoCD**: Moving towards declarative state management in Kubernetes.
-- **End-to-End (E2E) Testing**: Implementing Playwright/Cypress for full user-journey verification.
-- **Monitoring & Alerts**: Integrating Prometheus/Grafana and Slack notifications for deployment status.
-- **Infrastructure as Code (IaC)**: Using Terraform to manage cloud resources.
+An automated, multi-service CI/CD pipeline implementation using **GitHub Actions**, **Docker Hub**, and **Watchtower**. This project serves as a clean, production-grade template for automating the testing, containerization, and continuous delivery of a full-stack React and Node.js application.
 
 ---
-*Maintained for practicing high-frequency, reliable automation and engineering excellence.*
+
+## 🏗️ Architecture
+
+The application is structured as a 3-tier containerized architecture:
+
+```
+[ Client Browser ]
+        │
+        ▼ (Port 80)
+┌──────────────┐
+│    Nginx     │ ──( / )────► [ Frontend: React + Vite (Static Nginx) ]
+│ Reverse Proxy│
+│              │ ──( /api )─► [ Backend: Node.js + Express (Port 5000) ]
+└──────────────┘
+```
+
+- **Frontend (`frontend/`)**: React (Vite) Single-Page Application (SPA) containerized via multi-stage Docker build with Nginx.
+- **Backend (`backend/`)**: Node.js (Express) REST API with automated unit and integration tests using **Jest** and **Supertest**.
+- **Reverse Proxy (`nginx/`)**: Nginx reverse proxy routing port `80` client traffic between frontend (`/`) and backend (`/api`).
+- **Container Registry**: Docker Hub for versioned and latest container images.
+- **Continuous Deployment**: **Watchtower** for automated container updates upon new image releases.
+
+---
+
+## 🔄 CI/CD Pipeline Workflow
+
+The automated pipeline is defined in [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml):
+
+1. **Pull Request or Push to `develop`**:
+   - **Automated Testing**: Runs backend integration tests (`npm test`) using Jest & Supertest.
+   - **Security Audit**: Executes `npm audit --audit-level=high` to detect known vulnerabilities.
+2. **Merge to `develop`**:
+   - **Docker Build**: Builds production Docker images for Frontend, Backend, and Nginx reverse proxy.
+   - **Semantic Tagging**: Tags images with both `MAJOR.MINOR.<RUN_NUMBER>` and `latest`.
+   - **Registry Push**: Authenticates and publishes all three images to **Docker Hub**.
+3. **Auto-Deployment (Watchtower)**:
+   - Watchtower monitors Docker Hub for new `latest` tags.
+   - Automatically pulls new images and gracefully restarts containers without manual intervention.
+
+---
+
+## 🛠️ Local Development & Setup
+
+### Prerequisites
+- Docker & Docker Compose
+- Node.js (v18+) *(Optional, for running outside Docker)*
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/TharushaSachinthana/Automate-CICD.git
+cd Automate-CICD
+```
+
+### 2. Run with Docker Compose (Local Build)
+Build and start all 3 services locally:
+```bash
+docker compose up --build -d
+```
+Access the application at `http://localhost`.
+
+### 3. Run Production Stack (Pre-built Images)
+Create a `.env` file in the root directory:
+```env
+DOCKERHUB_USERNAME=your_dockerhub_username
+```
+Launch the production images:
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### 4. Enable Automated Container Updates with Watchtower
+```bash
+docker run -d \
+  --name watchtower \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  containrrr/watchtower --interval 30
+```
+
+---
+
+## 🧪 Testing
+
+Run the backend integration test suite:
+```bash
+cd backend
+npm install
+npm test
+```
+
+---
+
+## 📂 Project Structure
+
+```
+Automate-CICD/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml              # GitHub Actions CI/CD Pipeline
+├── backend/
+│   ├── Dockerfile                 # Backend Node.js image definition
+│   ├── index.js                   # Express application & REST endpoints
+│   ├── index.test.js              # Integration tests (Jest + Supertest)
+│   └── package.json
+├── frontend/
+│   ├── Dockerfile                 # Multi-stage build (Vite build -> Nginx)
+│   ├── src/                       # React source code
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+├── nginx/
+│   ├── Dockerfile                 # Nginx reverse proxy image
+│   └── default.conf               # Routing configuration (/ and /api)
+├── docker-compose.yml             # Local build compose
+├── docker-compose.prod.yml        # Docker Hub production image compose
+└── README.md
+```
